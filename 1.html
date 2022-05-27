@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+
+<body>
+  <script>
+    var depts = [
+      { id: 1, pid: '', name: 'aaa' },
+      { id: 2, pid: 1, name: 'bbb' },
+      { id: 3, pid: 1, name: 'ccc' },
+      { id: 5, pid: '', name: 'eee' },
+      { id: 6, pid: 2, name: 'fff' }
+    ]
+    function fn (pid) {
+      let arr = []
+      // console.log(arr);
+      depts.forEach(item => {
+        if (item.pid === pid) {
+          arr.push(item)
+          var arr1 = fn(item.id)
+          if (arr1.length > 0) {
+            item.children = arr1
+          }
+        }
+      })
+      return arr
+    }
+    let list = fn('')
+    console.log(list);
+    // const arr = []
+    // depts.forEach(item => {
+    //   if (item.pid === '') {
+    //     arr.push(item)
+    //     const arr1 = []
+    //     depts.forEach(item1 => {
+    //       if (item.id === item1.pid) {
+    //         arr1.push(item1)
+    //         const arr2 = []
+    //         depts.forEach(item2 => {
+    //           if (item1.id === item2.pid) {
+    //             arr2.push(item2)
+    //           }
+    //         })
+    //         item1.children = arr2
+    //       }
+    //     })
+    //     item.children = arr1
+    //   }
+    //   // console.log(item.children);
+    // })
+    // console.log(arr);
+  </script>
+</body>
+
+</html>

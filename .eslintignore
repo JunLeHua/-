@@ -1,0 +1,6 @@
+build/*.js
+src/assets
+public
+dist
+
+# eslint 不校验这些文件
