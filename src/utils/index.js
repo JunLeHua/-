@@ -115,7 +115,8 @@ export function param2Obj (url) {
   })
   return obj
 }
-// 判断筛选
+// 判断筛选 把普通数组数据格式变为树形结构数据格式
+// list 数据  pid父级根  把所对应的数据归类
 export function TreeList (list, pid) {
   const arr = []
   list.forEach(item => {

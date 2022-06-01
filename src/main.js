@@ -14,6 +14,8 @@ import router from './router'
 
 import '@/icons' // icon
 import '@/permission' // permission control
+import Print from 'vue-print-nb'
+Vue.use(Print)
 
 /**
  * If you don't want to use mock-server

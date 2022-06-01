@@ -4,7 +4,7 @@
       <template #left>
         <el-alert
           style="width:unset;float:left"
-          title="消息提示的文案"
+          :title="`共${total}条记录`"
           type="info"
           show-icon
           :closable="false"
@@ -14,14 +14,18 @@
         <el-button
           type="danger"
           size="mini"
+          @click="exportExcel"
         >普通excel导出</el-button>
         <el-button
           type="info"
           size="mini"
         >复杂表头excel导出</el-button>
+        <!-- 声明式导航 通过组件标签进行跳转router-linnk -->
+        <!-- 编程式 通过js api的方式跳转 -->
         <el-button
           type="success"
           size="mini"
+          @click="$router.push('/import')"
         >excel导入</el-button>
         <el-button
           type="primary"
@@ -32,6 +36,7 @@
     </PageTools>
     <el-card style="margin-top:10px">
       <el-table
+        style="margin-bottom:15px"
         :data="userList"
         border
         stripe
@@ -53,6 +58,7 @@
               v-imgError="'	http://ihrm.itheima.net/static/img/head.b6c3427d.jpg'"
               :src="scope.row.staffPhoto"
               style="width:70px;border-radius:50%"
+              @click="previewCode(scope.row.staffPhoto)"
             >
           </template>
         </el-table-column>
@@ -107,11 +113,17 @@
             href="#"
             :underline="false"
           >查看</el-link> -->
-            <el-button type="text">查看</el-button>
+            <el-button
+              type="text"
+              @click="$router.push('/employees/detail/'+scope.row.id)"
+            >查看</el-button>
             <el-button type="text">转正</el-button>
             <el-button type="text">调岗</el-button>
             <el-button type="text">离职</el-button>
-            <el-button type="text">角色</el-button>
+            <el-button
+              type="text"
+              @click="showSetRole(scope.row.id)"
+            >角色</el-button>
             <el-button
               type="text"
               @click="onRemove(scope.row.id)"
@@ -119,27 +131,39 @@
           </template>
         </el-table-column>
       </el-table>
+      <el-pagination
+        :current-page="queryObj.page"
+        :page-sizes="[10,50, 100, 200, 300]"
+        :page-size="queryObj.size"
+        layout="total, sizes, prev, pager, next, jumper"
+        :total="total"
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+      />
     </el-card>
     <!-- 新增员工对话框 -->
+    <!-- <add-dialog
+      :add-dialog-visible="addDialogVisible"
+      @updateVisible="addDialogVisible = $event"
+    /> -->
+    <!-- sync 解析 -->
+    <!-- :add-dialog-visible="addDialogVisible" -->
+    <!-- @update:add-dialog-visible="addDialogVisible = $event" -->
+    <add-dialog :add-dialog-visible.sync="addDialogVisible" />
+    <!-- 图片二维码对话框 -->
     <el-dialog
-      title="新增员工"
-      :visible.sync="addDialogVisible"
-      width="50%"
-      :before-close="handleClose"
+      title="图片二维码"
+      :visible.sync="codeDialogVisible"
+      width="30%"
     >
-      <span>这是一段信息</span>
-      <span
-        slot="footer"
-        class="dialog-footer"
-      >
-        <el-button @click="addDialogVisible = false">取 消</el-button>
-        <el-button
-          type="primary"
-          @click="addDialogVisible = false"
-        >确 定</el-button>
-      </span>
+      <canvas ref="codeRef" />
     </el-dialog>
-
+    <!-- 分配角色 -->
+    <!-- <SetRoleDialog :set-role-dialog-visible.sync="setRoleDialogVisible" /> -->
+    <SetRoleDialog
+      v-model="setRoleDialogVisible"
+      :user-id="userId"
+    />
   </div>
 </template>
 
@@ -147,19 +171,26 @@
 import employees from '@/constant/employees'
 const { hireType } = employees
 import { getUserList, removeEmployess } from '@/api/employees'
+import AddDialog from './components/add-dialog.vue'
+import QRCode from 'qrcode'
+import SetRoleDialog from './components/set-role-dialog.vue'
 export default {
+  name: 'Employees',
   filters: {},
-  components: {},
+  components: { AddDialog, SetRoleDialog },
   data () {
     return {
       queryObj: {
         page: 1,
-        pageSize: 10
+        size: 10
       },
       // 员工列表
       userList: [],
       total: 0,
-      addDialogVisible: false
+      addDialogVisible: false,
+      codeDialogVisible: false,
+      setRoleDialogVisible: false,
+      userId: '0'
     }
   },
   computed: {},
@@ -217,6 +248,77 @@ export default {
       // }).catch(() => {
       //   this.$message('已取消删除')
       // })
+    },
+    // 导出excel
+    async exportExcel () {
+      const excel = await import('@/vendor/Export2Excel')
+      // console.log(res)
+      const headers = {
+        '手机号': 'mobile',
+        '姓名': 'username',
+        '入职日期': 'timeOfEntry',
+        '聘用形式': 'formOfEmployment',
+        '转正日期': 'correctionTime',
+        '工号': 'workNumber',
+        '部门': 'departmentName'
+      }
+      const headersKey = Object.keys(headers)
+      // console.log(headersKey)
+      const { rows } = await getUserList(
+        { page: 1, size: this.total }
+      )
+      // console.log(rows)
+      const excelData = rows.map(item => {
+        const arr = []
+        headersKey.forEach(key => {
+          arr.push(item[headers[key]])
+        })
+        return arr
+      })
+      // console.log(excelData)
+      excel.export_json_to_excel({
+        header: headersKey, // 表头 必填
+        data: excelData, // 具体数据 必填
+        // data: this.userList,
+        filename: '乐华', // 非必填
+        autoWidth: true, // 非必填
+        bookType: 'xlsx', // 非必填
+        multiHeader: [['手机号', '主要信息', '', '', '', '', '部门']], // 多表头
+        merges: ['A1:A2', 'B1:F1', 'G1:G2']// 表格合并
+      })
+    },
+    handleSizeChange (val) {
+      this.queryObj.size = val
+      this.getUserList()
+    },
+    handleCurrentChange (val) {
+      this.queryObj.page = val
+      this.getUserList()
+    },
+    // 图片二维码
+    previewCode (avatar) {
+      if (!avatar) {
+        this.$message.error('该用户没有设置头像')
+        return
+      }
+      this.codeDialogVisible = true
+      // 点击对话框显示时，数据准备好了，但是视图还没有更新
+      // 因为数据驱动视图是异步的
+      // 我们通过$refs.ref 拿到的视图数据是旧的
+      // 为什么vue数据驱动视图是异步的
+      // 如果不是异步，每次数据发生改变，视图就要更新一次，大大的增加了服务器压力，如果是异步，等数据全部更新完毕，vue一次把视图全部更新
+      // .$nextTick 会等数据同步到视图之后，拿视图数据
+      // updated 虽然也可以拿到数据同步到视图之后的数据，但是如果其他元素更新了数据，也会触发执行该步骤
+      this.$nextTick(() => {
+        const canvas = this.$refs.codeRef
+        // console.log(canvas)
+        QRCode.toCanvas(canvas, avatar)
+      })
+    },
+    // 分配角色
+    showSetRole (id) {
+      this.setRoleDialogVisible = true
+      this.userId = id
     }
   }
 }
