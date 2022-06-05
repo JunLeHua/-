@@ -34,8 +34,8 @@
 import COS from 'cos-js-sdk-v5'
 // console.log(COS)
 var cos = new COS({
-  SecretId: 'AKIDEPPM9h19D2cw1uZzEI8i5aswlSwCDzXq',
-  SecretKey: '70f6IFzUklZ90e3GyYv9C5mFTWO5d1EK'
+  // SecretId: 'AKIDEPPM9h19D2cw1uZzEI8i5aswlSwCDzXq',
+  // SecretKey: '70f6IFzUklZ90e3GyYv9C5mFTWO5d1EK'
 })
 export default {
   name: 'UploadImage',
