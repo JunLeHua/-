@@ -562,7 +562,8 @@ export default {
     async saveUser () {
       await saveEmployeesBaseInfo(this.userInfo)
       this.$message.success('保存成功')
-    }
+    },
+    savePersonal () { }
 
   }
 }

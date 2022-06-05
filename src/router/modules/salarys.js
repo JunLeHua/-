@@ -1,13 +1,14 @@
-import Layout from "@/layout";
+import Layout from '@/layout'
 export default {
-  path: "/salarys",
+  path: '/salarys',
   component: Layout,
+  name: 'salarys',
   children: [
     {
-      path: "",
-      name: "salarys",
-      component: () => import("@/views/salarys/index"),
-      meta: { title: "工资", icon: "money" },
-    },
-  ],
-};
+      path: '',
+      name: 'salarys',
+      component: () => import('@/views/salarys/index'),
+      meta: { title: '工资', icon: 'money' }
+    }
+  ]
+}

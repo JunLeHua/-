@@ -1,5 +1,6 @@
 import { setToken, getToken, removeToken, setTime } from '@/utils/auth'
 import { login, getUserInfo, getStaffInfo } from '@/api/user'
+import { resetRouter } from '@/router'
 const state = {
   token: getToken() || '',
   userInfo: {}
@@ -17,6 +18,8 @@ const mutations = {
     state.token = ''
     state.userInfo = {}
     removeToken()
+    // 退出重置路由规则
+    resetRouter()
   }
 }
 const actions = {
@@ -30,7 +33,9 @@ const actions = {
     // console.log(res)
     const res1 = await getStaffInfo(res.userId)
     // console.log(res1)
-    context.commit('updataUserInfo', res1)
+    res.roles.points = ['PERMISSION_ADD', 'PERMISSION_DEL']
+    context.commit('updataUserInfo', { ...res1, ...res })
+    return res
   }
 }
 export default {

@@ -1,13 +1,14 @@
-import Layout from "@/layout";
+import Layout from '@/layout'
 export default {
-  path: "/approvals",
+  path: '/approvals',
   component: Layout,
+  name: 'approvals',
   children: [
     {
-      path: "",
-      name: "approvals",
-      component: () => import("@/views/approvals/index"),
-      meta: { title: "审批", icon: "tree-table" },
-    },
-  ],
-};
+      path: '',
+      name: 'approvals',
+      component: () => import('@/views/approvals/index'),
+      meta: { title: '审批', icon: 'tree-table' }
+    }
+  ]
+}

@@ -5,6 +5,7 @@
         <el-button
           type="primary"
           size="mini"
+          :disabled="btnIsDisabled(permissionBtn.add)"
           @click="onShowSet(1,'0')"
         >添加权限</el-button>
       </template>
@@ -60,13 +61,18 @@
           <el-button
             v-if="row.type===1"
             type="text"
+            :disabled="btnIsDisabled(permissionBtn.add)"
             @click="onShowSet(2,row.id)"
           >添加</el-button>
           <el-button
             type="text"
+            :disabled="btnIsDisabled(permissionBtn.edit)"
             @click="showEdit(row.id)"
           >编辑</el-button>
-          <el-button type="text">删除</el-button>
+          <el-button
+            type="text"
+            :disabled="btnIsDisabled(permissionBtn.del)"
+          >删除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -131,12 +137,15 @@
 <script>
 import { addRights, editRights, getAllRights, getRightsByIdInfo } from '@/api/rights'
 import { TreeList } from '@/utils'
+import checkPermission from '@/mixins/checkPermission'
 export default {
   name: 'Permissions',
   filters: {},
   components: {},
+  mixins: [checkPermission],
   data () {
     return {
+
       permissions: [],
       setDialogVisible: false,
       formData: {
@@ -151,7 +160,9 @@ export default {
       }
     }
   },
-  computed: {},
+  computed: {
+
+  },
   watch: {},
   created () {
     this.loadAllRights()
